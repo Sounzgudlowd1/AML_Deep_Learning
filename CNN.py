@@ -166,7 +166,6 @@ def runCNN(a,b,c,d,e,f,batch_size,epochs):
         samplewise_std_normalization=False #,  # divide each input by its std
        # zca_whitening=False  # apply ZCA whitening
                                 )  
-    print("----error here----")
     model.fit_generator(
                         datagen.flow(a,b, batch_size=batch_size),
                         steps_per_epoch=len(a) / 32,
@@ -175,7 +174,7 @@ def runCNN(a,b,c,d,e,f,batch_size,epochs):
                         validation_data = [c, d]#,
                         #callbacks = [MetricsCheckpoint('logs')]
                         )
-    print("----error here----")
+
     
     score = model.evaluate(c,d, verbose=0)
     print('\nKeras CNN #1C - accuracy:', score[1],'\n')
