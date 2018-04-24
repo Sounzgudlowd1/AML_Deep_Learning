@@ -15,7 +15,7 @@ import fnmatch
 
 
 
-###glob searches for all files  end with ".png"  Pathway will have to chang depending on where the files are stored
+###glob searches for all files  end with ".png"  Pathway will havee to chang depending on where the files are stored
 imagePatches = glob.glob('C:/Users/skhan/Desktop/Main/School/UIC/Academics/Semester_2/Adv_ML/Assignments/DLProject/DLP/data/**/*.png', recursive=True)
 
 
@@ -40,11 +40,11 @@ def sobel_hsv(image):
 
 ###This preprocessing function converts the RGB to grayscale.  The "coloring" dictates which, if any, filtering should be applied before conversion.  Filterting seems to improve grayscale 
 ##### It also resizes based on the inputs
-def proc_grey(WIDTH,HEIGHT,coloring):  
+def proc_grey(WIDTH,HEIGHT,coloring, start,end):    ##start , end indicate which images we want to use
     x = []
     y = []
 
-    for imge in imagePatches[0:10]:
+    for imge in imagePatches[start:end]:
         
         image=Image.open(imge)
         if coloring=='hsv':
@@ -65,7 +65,7 @@ def proc_grey(WIDTH,HEIGHT,coloring):
 
 ###This preprocessing function filters the RGB. The "coloring" dictates which, if any, filtering should be applied. This may not be very useful, but can still be used for resizing the original photos
 ##### It also resizes based on the inputs
-def proc_col(WIDTH,HEIGHT,coloring):
+def proc_col(WIDTH,HEIGHT,coloring,start,end):    ##start , end indicate which images we want to use
     x = []
     y = []
 
@@ -86,6 +86,7 @@ def proc_col(WIDTH,HEIGHT,coloring):
             y.append(1)
     
     return x, y
+
 
 ###Intensity scaling of the pixel matrices should aslo be done if color preprocessing is used
         ###X=np.array(x)
