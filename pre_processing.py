@@ -43,9 +43,10 @@ def sobel_hsv(image):
 def proc_grey(WIDTH,HEIGHT,coloring, start,end):    ##start , end indicate which images we want to use
     x = []
     y = []
-
+    i=0;
     for imge in imagePatches[start:end]:
-        
+        i=i+1
+        print('Image #',i," being preprocessed")
         image=Image.open(imge)
         if coloring=='hsv':
             image_out=toimage(rescale_intensity(1 - sobel_hsv(np.asarray(image)))).convert('L')
@@ -54,11 +55,11 @@ def proc_grey(WIDTH,HEIGHT,coloring, start,end):    ##start , end indicate which
         else:
             image_out=image.convert('L') ####LA
             
-        image_out = image_out.resize((WIDTH,HEIGHT)) 
+        image_out = np.asarray(image_out.resize((WIDTH,HEIGHT)))
         x.append(image_out)
-        if img in classZero:
+        if imge in classZero:
             y.append(0)
-        elif img in classOne:
+        elif imge in classOne:
             y.append(1)
     
     return x, y
@@ -78,13 +79,13 @@ def proc_col(WIDTH,HEIGHT,coloring,start,end):    ##start , end indicate which i
         else:
             image_out=image
         
-        image_out = image_out.resize((WIDTH,HEIGHT)) 
+        image_out = np.asarray(image_out.resize((WIDTH,HEIGHT)))
         x.append(image_out)
-        if img in classZero:
+        if imge in classZero:
             y.append(0)
-        elif img in classOne:
+        elif imge in classOne:
             y.append(1)
-    
+
     return x, y
 
 
