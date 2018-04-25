@@ -10,12 +10,30 @@ import fnmatch
 from sklearn.model_selection import train_test_split
 import matplotlib.pylab as plt
 import pandas as pd
+import numpy as np
+import random as rand
 
-def get_data(num_patches = -1, rnd = True):
+
+def get_file_paths(num_files = -1, randomly_sample = True):
     image_patches = glob('../data/**/*.png', recursive = True)
-    total_patches = len(image_patches)
-    if num_patches ==  -1:
-        num_patches = total_patches
+    if(num_files == -1):
+        return image_patches
+        
+    out_patches = []
+    if randomly_sample:
+        i = 0
+        while(i < num_files):
+            out_patches.append(image_patches[rand.randint(0, len(image_patches) -1)])
+            i = i + 1
+    else:
+        out_patches = image_patches[:num_files]
+    
+    return out_patches
+            
+
+def get_data(image_patches, randomly_split = True):
+    num_patches = len(image_patches)
+        
     pattern_zero = '*class0.png'
     pattern_one = '*class1.png'
     classZero = fnmatch.filter(image_patches, pattern_zero)
@@ -33,15 +51,29 @@ def get_data(num_patches = -1, rnd = True):
             y.append(1)
         else:
             return
-    
-        
-    if rnd == True:
+    if randomly_split == True:
         return train_test_split(X, y, test_size = 0.2)
     else:
         return train_test_split(X, y, test_size = 0.2, random_state = 101085)
+
+def convert_to_dataframe(X, y):
+    cols = []
+    for i in range(7500):
+        cols.append('f' + str(i))
+
+    X = np.array(X)/255.0
+    X = X.reshape(len(X), 50 * 50 * 3) 
+    X_df = pd.DataFrame(columns = cols, data = X)
     
+    y = np.array(y)
+    y_df = pd.DataFrame(columns = ['IDC (+)'], data = y)
+    
+    return X_df, y_df
+
 
 def plot_image(image):
     plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB)); plt.axis('off')
     plt.show()
     return
+
+
