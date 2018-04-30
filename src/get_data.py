@@ -61,11 +61,11 @@ def convert_to_dataframe(X, y):
     for i in range(7500):
         cols.append('f' + str(i))
 
-    X = np.array(X)/255.0
-    X = X.reshape(len(X), 50 * 50 * 3) 
+    X = np.array(X, dtype = np.float32) / 255.0
+    X = X.reshape(len(X), 50 * 50 * 3)
     X_df = pd.DataFrame(columns = cols, data = X)
     
-    y = np.array(y)
+    y = np.array(y, dtype = np.bool)
     y_df = pd.DataFrame(columns = ['IDC (+)'], data = y)
     
     return X_df, y_df

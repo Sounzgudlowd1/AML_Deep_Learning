@@ -46,7 +46,7 @@ import tensorflow as tf
 K.set_image_dim_ordering('tf')
 
 
-imagePatches = glob.glob('C:/Users/skhan/Desktop/Main/School/UIC/Academics/Semester_2/Adv_ML/Assignments/DLProject/DLP/data/**/*.png', recursive=True)
+imagePatches = glob.glob('../data/**/*.png', recursive=True)
 patternZero = '*class0.png'
 patternOne = '*class1.png'
 classZero = fnmatch.filter(imagePatches, patternZero)
