@@ -14,26 +14,75 @@ from keras.utils.np_utils import to_categorical
 import pandas as pd
 import keras
 import sklearn
+
+
 from sklearn.utils import class_weight
 from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import Callback
+from sklearn.model_selection import train_test_split
+import glob
+import fnmatch
+from PIL import Image
+from scipy.misc import toimage 
+from skimage.exposure import rescale_intensity  ####
+
 N_EXAMPLES = 10000
 EPOCHS = 4
 BATCH_SIZE = 32 
 
+@adapt_rgb(each_channel)
+def sobel_each(image):
+    return filters.sobel(image)
+@adapt_rgb(hsv_value)
+def sobel_hsv(image):
+    return filters.sobel(image)
+
+def proc_col(WIDTH,HEIGHT,coloring,start,end):    ##start , end indicate which images we want to use
+    x = []
+    y = []
+    i=start
+    imagePatches = glob.glob('../data/**/*.png', recursive=True)
+    patternZero = '*class0.png'
+    patternOne = '*class1.png'
+    classZero = fnmatch.filter(imagePatches, patternZero)
+    classOne = fnmatch.filter(imagePatches, patternOne)
+    for imge in imagePatches[start:end]:    
+        i=i+1
+        if i%500==0:
+            print("Image # ", i, " is bein preprocessed");
+
+        image=Image.open(imge)
+        if coloring=='hsv':
+            image_out=toimage(rescale_intensity(1 - sobel_hsv(np.asarray(image))))
+        elif coloring=='each':
+            image_out=toimage(rescale_intensity(1 - sobel_each(np.asarray(image))))
+        else:
+            image_out=image
+        
+        image_out = np.asarray(image_out.resize((WIDTH,HEIGHT)))
+        x.append(image_out)
+        if imge in classZero:
+            y.append(0)
+        elif imge in classOne:
+            y.append(1)
+
+    return x, y
+
+
 print('reading data')
-patches = gd.get_file_paths(N_EXAMPLES, False)
-X_train, X_test, y_train, y_test = gd.get_data(patches, False)
+#patches = gd.get_file_paths(N_EXAMPLES, False)
+#X_train, X_test, y_train, y_test = gd.get_data(patches, False)
 #X_train, y_train = gd.convert_to_dataframe(X_train, y_train) 
 #X_test, y_test = gd.convert_to_dataframe(X_test, y_test) 
+
+
+X,Y = proc_col(50,50,'none',0,10000)
+X=X/255.0
+
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+
 print("Done reading data")
 
-
-y_train_hot = to_categorical(y_train)
-y_traindf = pd.DataFrame(data = y_train_hot, columns = ['IDC(-1)', 'IDC(+)'])
-
-y_test_hot = to_categorical(y_test)
-y_testdf = pd.DataFrame(data = y_test_hot, columns = ['IDC(-1)', 'IDC(+)'])
 
 class MetricsCheckpoint(Callback):
     """Callback that saves metrics after each epoch"""
@@ -67,9 +116,9 @@ datagen = ImageDataGenerator(
     vertical_flip=True)  # randomly flip images
 
 
-history = model.fit_generator(datagen.flow(X_train, y_traindf, batch_size=BATCH_SIZE))
+history = model.fit_generator(datagen.flow(X_train, Y_train, batch_size=BATCH_SIZE))
 
-score = model.evaluate(X_train, y_traindf)
+score = model.evaluate(X_train, Y_train)
 y_pred = model.predict(X_train)
 
 
