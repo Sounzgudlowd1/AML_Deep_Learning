@@ -16,10 +16,10 @@ K.set_image_dim_ordering('tf')
 
 import glob
 from PIL import Image
-from skimage.color.adapt_rgb import adapt_rgb, each_channel, hsv_value ########
-from skimage import filters  #######
-from skimage.exposure import rescale_intensity  ####
-from scipy.misc import toimage  ####
+#from skimage.color.adapt_rgb import adapt_rgb, each_channel, hsv_value ########
+#from skimage import filters 
+#from skimage.exposure import rescale_intensity
+#from scipy.misc import toimage  
 import fnmatch
 
 import pandas as pd
@@ -32,11 +32,11 @@ from imblearn.under_sampling import RandomUnderSampler
 
 
 ##########################SETTINGS
-ep=3;
-batch=32
+ep=5;
+batch=323
 shape=3;
-start_images=1000;    #determines where the first image will start from the dataset
-last_images=3000; ### determines where the last image will be from the dataset  
+start_images=0;    #determines where the first image will start from the dataset
+last_images=10000; ### determines where the last image will be from the dataset  
 #Example  To get images 10-100, give arguments  0, 100  respectively
 val_perc=0.2   #The proportion of the dataset that should be for testing/validation
 ################
@@ -67,21 +67,20 @@ classZero = fnmatch.filter(imagePatches, patternZero)
 classOne = fnmatch.filter(imagePatches, patternOne)
 print("Reading complete")
 
+'''
 @adapt_rgb(each_channel)
 def sobel_each(image):
     return filters.sobel(image)
 @adapt_rgb(hsv_value)
 def sobel_hsv(image):
     return filters.sobel(image)
+'''
 
 
 
 
 
 
-
-###This preprocessing function converts the RGB to grayscale.  The "coloring" dictates which, if any, filtering should be applied before conversion.  Filterting seems to improve grayscale 
-##### It also resizes based on the inputs
 def proc_grey(WIDTH,HEIGHT,coloring, start,end):    ##start , end indicate which images we want to use
     x = []
     y = []
@@ -91,12 +90,12 @@ def proc_grey(WIDTH,HEIGHT,coloring, start,end):    ##start , end indicate which
         if i%500==0:
             print("Image # ", i, " is bein preprocessed");
         image=Image.open(imge)
-        if coloring=='hsv':
-            image_out=toimage(rescale_intensity(1 - sobel_hsv(np.asarray(image)))).convert('L')
-        elif coloring=='each':
-            image_out=toimage(rescale_intensity(1 - sobel_each(np.asarray(image)))).convert('L')
-        else:
-            image_out=image.convert('L') ####LA
+#        if coloring=='hsv':
+#            image_out=toimage(rescale_intensity(1 - sobel_hsv(np.asarray(image)))).convert('L')
+#        elif coloring=='each':
+#            image_out=toimage(rescale_intensity(1 - sobel_each(np.asarray(image)))).convert('L')
+#        else:
+        image_out=image.convert('L') ####LA
             
         image_out = np.asarray(image_out.resize((WIDTH,HEIGHT)))
         image_out=np.reshape(image_out,(WIDTH,HEIGHT,1))
@@ -107,9 +106,6 @@ def proc_grey(WIDTH,HEIGHT,coloring, start,end):    ##start , end indicate which
             y.append(1)
     
     return x, y
-
-###This preprocessing function filters the RGB. The "coloring" dictates which, if any, filtering should be applied. This may not be very useful, but can still be used for resizing the original photos
-##### It also resizes based on the inputs
 
 
 def proc_col(WIDTH,HEIGHT,coloring,start,end):    ##start , end indicate which images we want to use
@@ -122,13 +118,12 @@ def proc_col(WIDTH,HEIGHT,coloring,start,end):    ##start , end indicate which i
             print("Image # ", i, " is bein preprocessed");
 
         image=Image.open(imge)
-        if coloring=='hsv':
-            image_out=toimage(rescale_intensity(1 - sobel_hsv(np.asarray(image))))
-        elif coloring=='each':
-            image_out=toimage(rescale_intensity(1 - sobel_each(np.asarray(image))))
-        else:
-            image_out=image
-        
+#        if coloring=='hsv':
+#            image_out=toimage(rescale_intensity(1 - sobel_hsv(np.asarray(image))))
+#        elif coloring=='each':
+#            image_out=toimage(rescale_intensity(1 - sobel_each(np.asarray(image))))
+#        else:
+        image_out=image   
         image_out = np.asarray(image_out.resize((WIDTH,HEIGHT)))
         x.append(image_out)
         if imge in classZero:
@@ -454,6 +449,7 @@ print("New Class Weights: ",class_weight2)
 #os.makedirs("coef")
 h1=CNNadam(X_trainRosReshaped, Y_trainRosHot, X_testRosReshaped, Y_testRosHot,2,class_weight2,shape,batch,ep)
 
+
 with open('coef/adam_train.txt', 'w') as file:
     file.write("%s\n" % 0.0)
     for item in h1.history['acc']:
@@ -492,6 +488,7 @@ with open('coef/ada_test.txt', 'w') as file:
  
  
 h4=CNNrms(X_trainRosReshaped, Y_trainRosHot, X_testRosReshaped, Y_testRosHot,2,class_weight2,shape,batch,ep)
+
 with open('coef/rms_train.txt', 'w') as file:
     file.write("%s\n" % 0.0)
     for item in h4.history['acc']:
@@ -502,13 +499,16 @@ with open('coef/rms_test.txt', 'w') as file:
       file.write("%s\n" % item)
 
 
+
+
+with open('coef/size.txt', 'w') as file:
+    for t in list([X_trainRosReshaped.shape,X_testRosReshaped.shape,X_train.shape,X_test.shape]):
+        file.write(' '.join(str(s) for s in t) + '\n')
 ## To read the data off the text files and plot them   
-'''     
-print(h1.history['acc'])     
-print(h2.history['acc'])     
-print(h3.history['acc'])     
-print(h4.history['acc'])      
-          
+
+
+
+'''         
 a=[]   
 with open('coef/adam_train.txt') as f:
     for line in f:
@@ -570,7 +570,7 @@ with open('coef/rms_test.txt') as f:
 
 
     
-    
+
 plt.figure(figsize=(30,15))
 plt.subplot(1,2,1)
 plt.plot(a)
@@ -599,3 +599,4 @@ plt.xlabel('epoch')
 plt.legend(['Adam', 'SGD','AdaGrad','RMSprop'], loc='lower center', bbox_to_anchor=(0.5, -.15),   ncol=4, fancybox=True, shadow=True )
 plt.savefig('coef/testing_accuracy_curve.png')
 '''
+

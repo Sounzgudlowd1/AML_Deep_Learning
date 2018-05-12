@@ -22,6 +22,7 @@ There are 2 versions of the CNN:
 6.  Report listing the final precision, recall, and fscore of Adagrad
 7.  Train and test accuracy per each epoch for RMSprop
 8.  Report listing the final precision, recall, and fscore of RMSpropr
+9.  Sizes of the train and test sets, before & after resampling.
 
 
 
